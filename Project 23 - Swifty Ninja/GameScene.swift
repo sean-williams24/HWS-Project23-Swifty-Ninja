@@ -119,6 +119,48 @@ class GameScene: SKScene {
         if !isSwooshSoundActive {
             playSwooshSound()
         }
+        
+        let nodesAtPoint = nodes(at: location)
+
+        //Use for case let so we only enter loop if node happens to be an SKSpriteNode
+        for case let node as SKSpriteNode in nodesAtPoint {
+            if node.name == "enemy" {
+                // destroy penguin
+                // 1 - Create a particle effect over the penguin.
+                if let emitter = SKEmitterNode(fileNamed: "sliceHitEnemy") {
+                    emitter.position = node.position
+                    addChild(emitter)
+                }
+
+                // 2 - Clear its node name so that it can't be swiped repeatedly.
+                node.name = ""
+
+                // 3 - Disable the isDynamic of its physics body so that it doesn't carry on falling.
+                node.physicsBody?.isDynamic = false
+
+                // 4 - Make the penguin scale out and fade out at the same time.
+                let scaleOut = SKAction.scale(to: 0.001, duration:0.2)
+                let fadeOut = SKAction.fadeOut(withDuration: 0.2)
+                let group = SKAction.group([scaleOut, fadeOut])
+
+                // 5 - After making the penguin scale out and fade out, we should remove it from the scene.
+                let seq = SKAction.sequence([group, .removeFromParent()])
+                node.run(seq)
+
+                // 6 - Add one to the player's score.
+                score += 1
+
+                // 7 - Remove the enemy from our activeEnemies array.
+                if let index = activeEnemies.firstIndex(of: node) {
+                    activeEnemies.remove(at: index)
+                }
+
+                // 8 - Play a sound so the player knows they hit the penguin.
+                run(SKAction.playSoundFileNamed("whack.caf", waitForCompletion: false))
+            } else if node.name == "bomb" {
+                // destroy bomb
+            }
+        }
     }
     
     func playSwooshSound() {
