@@ -35,6 +35,13 @@ class GameScene: SKScene {
     var activeEnemies = [SKSpriteNode]()
     var bombSoundEffect: AVAudioPlayer?
     
+    let randomXPosition = Int.random(in: 64...960)
+    let offBottomOfScreen = -128
+    let moveFarRight = Int.random(in: 8...15)
+    let moveModerateRight = Int.random(in: 3...5)
+    let moveFarLeft = -Int.random(in: 8...15)
+    let moveModerateLeft = -Int.random(in: 3...5)
+    
     var activeSlicePoints = [CGPoint]()
     var isSwooshSoundActive = false
     
@@ -306,9 +313,10 @@ class GameScene: SKScene {
             enemy.name = "enemy"
         }
 
+        
         // position code
         // 1- Give the enemy a random position off the bottom edge of the screen.
-        let randomPosition = CGPoint(x: Int.random(in: 64...960), y: -128)
+        let randomPosition = CGPoint(x: randomXPosition, y: offBottomOfScreen)
         enemy.position = randomPosition
 
         // 2- Create a random angular velocity, which is how fast something should spin.
@@ -317,13 +325,13 @@ class GameScene: SKScene {
 
         // 3- Create a random X velocity (how far to move horizontally) that takes into account the enemy's position.
         if randomPosition.x < 256 {
-            randomXVelocity = Int.random(in: 8...15)
+            randomXVelocity = moveFarRight
         } else if randomPosition.x < 512 {
-            randomXVelocity = Int.random(in: 3...5)
+            randomXVelocity = moveModerateRight
         } else if randomPosition.x < 768 {
-            randomXVelocity = -Int.random(in: 3...5)
+            randomXVelocity = moveModerateLeft
         } else {
-            randomXVelocity = -Int.random(in: 8...15)
+            randomXVelocity = moveFarLeft
         }
 
         // 4- Create a random Y velocity just to make things fly at different speeds.
