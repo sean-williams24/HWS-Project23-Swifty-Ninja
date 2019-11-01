@@ -135,12 +135,19 @@ class GameScene: SKScene {
 
         //Use for case let so we only enter loop if node happens to be an SKSpriteNode
         for case let node as SKSpriteNode in nodesAtPoint {
-            if node.name == "enemy" {
+            if node.name == "enemy" || node.name == "fastEnemy" {
                 // destroy penguin
                 // 1 - Create a particle effect over the penguin.
                 if let emitter = SKEmitterNode(fileNamed: "sliceHitEnemy") {
                     emitter.position = node.position
                     addChild(emitter)
+                }
+                
+                // 6 - Add one to the player's score.
+                if node.name == "fastEnemy" {
+                    score += 100
+                } else {
+                    score += 1
                 }
 
                 // 2 - Clear its node name so that it can't be swiped repeatedly.
@@ -158,9 +165,7 @@ class GameScene: SKScene {
                 let seq = SKAction.sequence([group, .removeFromParent()])
                 node.run(seq)
 
-                // 6 - Add one to the player's score.
-                score += 1
-
+                
                 // 7 - Remove the enemy from our activeEnemies array.
                 if let index = activeEnemies.firstIndex(of: node) {
                     activeEnemies.remove(at: index)
@@ -310,9 +315,15 @@ class GameScene: SKScene {
         } else {
             enemy = SKSpriteNode(imageNamed: "penguin")
             run(SKAction.playSoundFileNamed("launch.caf", waitForCompletion: false))
-            enemy.name = "enemy"
+            
+            let i = Int.random(in: 0...8)
+                if i < 6 {
+                    enemy.name = "enemy"
+                } else {
+                    enemy.name = "fastEnemy"
+                }
         }
-
+        print(enemy.name!)
         
         // position code
         // 1- Give the enemy a random position off the bottom edge of the screen.
@@ -335,7 +346,14 @@ class GameScene: SKScene {
         }
 
         // 4- Create a random Y velocity just to make things fly at different speeds.
-        let randomYVelocity = Int.random(in: 24...32)
+        let randomYVelocity: Int
+        if enemy.name == "enemy" || enemy.name == "bombContainer" {
+            randomYVelocity = Int.random(in: 24...32)
+        } else {
+            randomYVelocity = Int.random(in: 32...35)
+            enemy.xScale = 0.5
+            enemy.yScale = 0.5
+        }
 
         // 5- Give all enemies a circular physics body where the collisionBitMask is set to 0 so they don't collide.
         enemy.physicsBody = SKPhysicsBody(circleOfRadius: 64)
@@ -343,10 +361,13 @@ class GameScene: SKScene {
         enemy.physicsBody?.angularVelocity = randomAngularVelocity
         enemy.physicsBody?.collisionBitMask = 0
         
-
+        
         addChild(enemy)
         activeEnemies.append(enemy)
     }
+    
+    
+    
     
     func subtractLife() {
         lives -= 1
@@ -386,6 +407,11 @@ class GameScene: SKScene {
             livesImages[1].texture = SKTexture(imageNamed: "sliceLifeGone")
             livesImages[2].texture = SKTexture(imageNamed: "sliceLifeGone")
         }
+        
+        let gameOver = SKSpriteNode(imageNamed: "gameOver")
+        gameOver.zPosition = 2
+        gameOver.position = CGPoint(x: 512, y: 384)
+        addChild(gameOver)
     }
     
     
@@ -398,7 +424,7 @@ class GameScene: SKScene {
                 if node.position.y < -140 {
                     node.removeAllActions()
 
-                    if node.name == "enemy" {
+                    if node.name == "enemy" || node.name == "fastEnemy" {
                         node.name = ""
                         subtractLife()
 
